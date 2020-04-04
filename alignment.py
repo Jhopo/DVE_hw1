@@ -60,7 +60,7 @@ def image_alignment(img_list, filename_list, pyramid_level=5):
 
             width, height = int(size[1] / (2**ratio)), int(size[0] / (2**ratio))
             img1_r = bit(cv2.resize(img1, (width, height)))
-            img2_r = bit(cv2.resize(img2, (width, height)))
+            img2_r = cv2.resize(img2, (width, height))
             mask_img_r = bit(cv2.resize(mask_img, (width, height)))
 
             diff_list = []
