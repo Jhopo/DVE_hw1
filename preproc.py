@@ -15,6 +15,7 @@ def load_imgs(data_dir='../flower/'):
         img_list.append(img)
         filename_list.append(file_name.split('/')[-1])
 
-    shutter_speed = [1/float(2**(11-i)) for i in range(9)]
+    shutter_speed = [1/float(2**(11-i)) for i in range(9)]  # for flowers and chickens
+    #shutter_speed = [1/float(2**(3+i)) for i in range(13)]  # for exposures
 
     return img_list, filename_list, shutter_speed

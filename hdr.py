@@ -5,6 +5,7 @@ import math
 
 import cv2
 import numpy as np
+import seaborn as sb
 import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
@@ -63,7 +64,7 @@ class HDRSolver():
                 k += 1
 
             x, residuals, rank, s = np.linalg.lstsq(A, b)
-            g = x[0:n-1]
+            g = x[0:n]
             lE = x[n:]
 
             self.G.append(g)
@@ -78,22 +79,39 @@ class HDRSolver():
     def plot_response_curve(self):
         color = ['b', 'g', 'r']
 
-        for i in range(self.channel):
-            plt.plot(np.arange(len(self.G[i])), self.G[i], color[i]+'x')
+        for c_i in range(self.channel):
+            plt.plot(np.arange(len(self.G[c_i])), self.G[c_i], color[c_i]+'x')
 
+        plt.xlabel('pixel value')
+        plt.ylabel('log exposure')
         plt.savefig('../reponse_curve.png', bbox_inches='tight', dpi=300)
         plt.gcf().clear()
 
 
     def create_radiance_map(self):
-        pass
-        '''
+        color = ['blue', 'green', 'red']
+
+        hdr = []
         for c_i in range(self.channel):
+            hdr_img = np.zeros((self.height, self.width))
             for h in range(self.height):
                 for w in range(self.width):
-                    z = img[h][w][c_i]
-        '''
+                    numerator, denominator = 0., 0.
+                    for j, img in enumerate(self.img_list):
+                        z = img[h][w][c_i]
+                        numerator += self.weighting_func(z) * (self.G[c_i][z] - self.Bm[j])
+                        denominator += self.weighting_func(z)
 
+                    hdr_img[h][w] = numerator / denominator
+            hdr.append(hdr_img)
+
+            # plot
+            heat_map = sb.heatmap(hdr_img)
+            plt.axis('off')
+            plt.savefig('../heatmap_{}.png'.format(color[c_i]), bbox_inches='tight', dpi=300)
+            plt.gcf().clear()
+
+        return hdr
 
 
     def sample_pixels(self, sample_num=100, method='random'):
@@ -123,7 +141,6 @@ class HDRSolver():
 
 
     def weighting_func(self, z):
-
         return z - self.Z_min if z <= self.Z_mid else self.Z_max - z
 
 
@@ -136,9 +153,9 @@ if __name__ == '__main__':
         solver = HDRSolver(source_dir)
         solver.solve()
         solver.plot_response_curve()
-        solver.create_radiance_map()
+        hdr = solver.create_radiance_map()
 
     if sys.argv[1] == 'eval':
         solver = HDRSolver(eval_dir)
         solver.load_G()
-        solver.create_radiance_map()
+        hdr = solver.create_radiance_map()
