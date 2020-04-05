@@ -14,6 +14,7 @@ def threshold_median_intensity(img):
 
     return new_img
 
+
 def mask(img):
     median = np.median(img)
     mask_img = cv2.inRange(img, median - 10, median + 10)
@@ -40,7 +41,7 @@ def image_alignment(img_list, filename_list, pyramid_level=5):
     # convert to gray-scale
     img_gray = [cv2.cvtColor(np.float32(img), cv2.COLOR_BGR2GRAY) for img in img_list]
 
-    # thrsesholding
+    # thrsesholding and mask
     imgs = [threshold_median_intensity(img) for img in img_gray]
     mask_img = mask(img_gray[0])
 
@@ -49,7 +50,7 @@ def image_alignment(img_list, filename_list, pyramid_level=5):
     img1 = imgs[0]
     size = img1.shape
 
-    shift_list = [(0, 0)]  # first image need no shifting
+    shift_list = [(0, 0)]  # first image needs no shifting
     for idx in range(1, len(imgs)):
         print (filename_list[idx] + '...', end='')
         img2 = imgs[idx]
